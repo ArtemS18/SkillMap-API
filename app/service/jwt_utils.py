@@ -1,3 +1,4 @@
+from typing import Any
 import jwt
 import pydantic
 from datetime import datetime, timedelta, timezone
@@ -8,13 +9,16 @@ from config import settings
 
 
 def create_access_token(
-    user_id: int, _expire_at: timedelta = settings.jwt_access_expires_at
+    data: dict[str, Any], _expire_at: timedelta = settings.jwt_access_expires_at
 ):
     now = datetime.now(timezone.utc)
     expire_at = now + _expire_at
 
     payload = jwt_schema.JWTBaseClaims(
-        sub=str(user_id), scope=["access"], exp=expire_at, iss="backend", iat=now
+        **data,
+        exp=expire_at,
+        iss="backend",
+        iat=now,
     )
     token = jwt.encode(
         payload.model_dump(),

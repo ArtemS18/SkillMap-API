@@ -67,8 +67,8 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
 def create_app() -> FastAPI:
     _app = FastAPI(
-        title="Hide",
-        description="Hide API",
+        title="Skill Map",
+        description="Skill Map API",
         version="1.0.0",
         lifespan=lifespan,
         docs_url=settings.docs_url,

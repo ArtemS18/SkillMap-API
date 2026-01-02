@@ -1,3 +1,4 @@
+from fastapi.security import OAuth2PasswordRequestForm
 from db import models
 from tortoise.exceptions import IntegrityError
 from schemas import user_schema, auth_schema
@@ -16,13 +17,14 @@ async def register(create: user_schema.CreateUser) -> user_schema.OutUser:
         raise service_exp.AlreadyExist("user")
 
 
-async def login(cred: auth_schema.UserCredentials) -> auth_schema.TokenOut:
+async def login(cred: OAuth2PasswordRequestForm) -> auth_schema.TokenOut:
     exist_user = await models.User.get_or_none(email=cred.username)
     if exist_user is None:
         raise service_exp.NotFoundError(f"user with email = {cred.username}")
     if not pwd.verifi_password(cred.password, exist_user.hashed_password):
         raise service_exp.BadCredentials
-    token = jwt_utils.create_access_token(exist_user.id)
-    return auth_schema.TokenOut(
-        access_token=token, expire_in=settings.jwt_access_expires_at.seconds
+    access_expire = settings.jwt_access_expires_at
+    token = jwt_utils.create_access_token(
+        {"sub": str(exist_user.id), "scope": cred.scopes}, access_expire
     )
+    return auth_schema.TokenOut(access_token=token, expire_in=access_expire.seconds)

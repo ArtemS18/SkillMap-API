@@ -1,10 +1,10 @@
 from typing import Annotated
-from fastapi import APIRouter, Form, Security
+from fastapi import APIRouter, Depends, Form, Security
+from fastapi.security import OAuth2PasswordRequestForm
 from schemas import user_schema, auth_schema
 from service import auth
-from depends import get_current_user_id
 
-auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter(prefix="/auth", tags=["Autho"])
 
 
 @auth_router.post("/reg")
@@ -16,11 +16,6 @@ async def register(
 
 @auth_router.post("/login")
 async def login(
-    cred_form: Annotated[auth_schema.UserCredentials, Form()],
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> auth_schema.TokenOut:
-    return await auth.login(cred_form)
-
-
-@auth_router.get("/securety")
-async def test(user_id=Security(get_current_user_id, scopes=["items"])):
-    return {"ok": True, "user_id": user_id}
+    return await auth.login(form_data)
