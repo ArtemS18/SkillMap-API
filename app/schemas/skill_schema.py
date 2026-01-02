@@ -2,6 +2,10 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+class ModulesIn(BaseModel):
+    target_modules: list[str]
+
+
 class SkillOut(BaseModel):
     id: str
     name: str
