@@ -1,0 +1,3 @@
+TODO = 3
+IN_PROGRESS = 1
+CLOSED = 2

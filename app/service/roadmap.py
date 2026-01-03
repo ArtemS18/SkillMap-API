@@ -1,3 +1,4 @@
+from redis_client.cache import cache_query
 from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
 from neomodel import adb
 from neo4j.graph import Node
@@ -19,8 +20,9 @@ MODULE_ORDER = [
 ]
 
 
+@cache_query()
 async def get_roadmap(from_: list[str], to_: list[str]) -> ModulePath:
-    if from_ ==  []:
+    if from_ == []:
         from_ = ["python_syntax_types"]
     cypq = """WITH $modulesOrder AS trackOrder
 

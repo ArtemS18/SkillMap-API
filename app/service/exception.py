@@ -11,7 +11,9 @@ class AlreadyExist(ServiceExeption):
         self.name = name
 
 
-class BadRequest(ServiceExeption): ...
+class BadRequest(ServiceExeption):
+    def __init__(self, detail: str | None = None):
+        self.detail = detail
 
 
 class BadCredentials(ServiceExeption): ...

@@ -24,12 +24,12 @@ class EdgeGet(BaseModel):
     target: str = Field(...)
 
     @classmethod
-    def from_neo4j(cls: "EdgeGet", neo_edg: tuple[Relationship, ...]) -> "EdgeGet":
+    def from_neo4j(cls: "EdgeGet", neo_edg: Relationship) -> "EdgeGet":
         return cls(
-            id=neo_edg[0].element_id,
-            kind=neo_edg[0].type,
-            source=neo_edg[0].nodes[0]._properties.get("code"),
-            target=neo_edg[0].nodes[1]._properties.get("code"),
+            id=neo_edg.element_id,
+            kind=neo_edg.type,
+            source=neo_edg.nodes[0]._properties.get("code"),
+            target=neo_edg.nodes[1]._properties.get("code"),
         )
 
 

@@ -28,6 +28,7 @@ cryptography = "^46.0.3"
 neomodel = "^6.0.0"
 aerich = "^0.9.2"
 tomlkit = "^0.13.3"
+redis = "^7.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.4"

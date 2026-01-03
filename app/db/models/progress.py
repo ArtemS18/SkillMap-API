@@ -1,11 +1,13 @@
 import typing
 from tortoise import fields
 from tortoise.fields.base import OnDelete
-from db.models.status import Status
+
+from db import constants
 from db.models import base
 
 if typing.TYPE_CHECKING:
     from db.models.user import User
+    from app.db.models.status import Status
 
 
 class UserModuleProgress(base.BaseMixin, base.BaseModel):
@@ -14,7 +16,7 @@ class UserModuleProgress(base.BaseMixin, base.BaseModel):
         "server.User", related_name="modules"
     )
     status: fields.ForeignKeyRelation["Status"] = fields.ForeignKeyField(
-        "server.Status", on_delete=OnDelete.SET_DEFAULT, default=1
+        "server.Status", on_delete=OnDelete.SET_DEFAULT, default=constants.IN_PROGRESS
     )
 
     class Meta:

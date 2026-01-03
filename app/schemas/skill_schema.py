@@ -19,3 +19,10 @@ class ModuleOut(BaseModel):
 
 class ModulePath(BaseModel):
     path: list[ModuleOut]
+
+
+class UserPath(BaseModel):
+    complited: int
+    lenght: int
+    current_module: str
+    path: list[ModuleOut]

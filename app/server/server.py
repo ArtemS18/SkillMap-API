@@ -5,6 +5,7 @@ from tortoise import Tortoise, generate_config
 from tortoise.contrib.fastapi import RegisterTortoise
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from redis_client import client
 from config import settings
 from service import exception as service_exp
 
@@ -61,6 +62,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
                 add_exception_handlers=True,
             ):
                 yield
+                await client.disconnect()
     except Exception as e:
         raise
 
@@ -93,6 +95,12 @@ async def validation_service_exp(req: Request, exption: service_exp.ServiceExept
                 content={"detail": f"{_exption.name.capitalize()} not found"},
             )
         case service_exp.BadRequest:
+            _bad_req: service_exp.BadRequest = exption
+            if _bad_req.detail is not None:
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"detail": _bad_req.detail},
+                )
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Bad request data"},

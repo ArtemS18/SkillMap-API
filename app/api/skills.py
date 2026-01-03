@@ -3,10 +3,10 @@ from schemas import graph_schema, skill_schema
 from service import skills as skill_service
 
 
-skill_router = APIRouter(prefix="/skills", tags=["Skills"])
+skill_router = APIRouter(prefix="/skill-graph", tags=["Skills"])
 
 
-@skill_router.get("/graph", response_model=graph_schema.GraphGet)
+@skill_router.get("/", response_model=graph_schema.GraphGet)
 async def handel_graph_skills(topic: str = Query(...)):
     return await skill_service.get_graph_by_topic(topic)
 

@@ -38,4 +38,4 @@ def get_current_user_id(
                 detail="Not enough permissions",
                 headers={"WWW-Authenticate": authenticate_value},
             )
-    return user_claims.sub
+    return int(user_claims.sub)

@@ -1,22 +1,13 @@
-from fastapi import APIRouter, Depends, Security
-from app.depends import get_current_user_id
-from schemas import skill_schema
+from fastapi import APIRouter, Body, Depends, Security
+from depends import get_current_user_id
 from service import progress
 
 
 user_router = APIRouter(prefix="/user", tags=["User"])
 
 
-@user_router.post("/roadmap", response_model=skill_schema.ModulePath)
-async def create_user_path(
-    schema: skill_schema.ModulesIn,
-    user_id: int = Security(get_current_user_id, scopes=["roadmap.write"]),
+@user_router.get("/progress", response_model=list[str])
+async def get_user_learned_skills(
+    user_id: int = Security(get_current_user_id, scopes=["me"]),
 ):
-    return await progress.create_user_path(user_id, schema.target_modules)
-
-
-@user_router.get("/roadmap", response_model=skill_schema.ModulePath)
-async def get_user_path(
-    user_id: int = Security(get_current_user_id, scopes=["roadmap.read"]),
-):
-    return await progress.get_current_user_path(user_id)
+    return await progress.get_learned_skills(user_id)

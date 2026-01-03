@@ -53,6 +53,16 @@ services:
     networks:
       - backend
 
+  redis:
+    image: redis:7.4.0
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+    networks:
+      - postgres
+      - backend
+
 networks:
   postgres:
   backend:
@@ -63,3 +73,4 @@ volumes:
     neo4j-config:
     neo4j-data:
     neo4j-plugins:
+    redis:

@@ -1,4 +1,5 @@
 import asyncio
+from redis_client.cache import cache_query
 from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
 from schemas.graph_schema import GraphGet, NodeGet, EdgeGet
 from neomodel import adb
@@ -8,30 +9,34 @@ from neo4j_client import models
 from service import roadmap
 
 
+@cache_query()
 async def get_graph_by_topic(topic: str) -> GraphGet:
-    cypq = (
-        "MATCH (:Subject{code: $topic_code})-[:LEARN]->(root:Module)"
-        "MATCH (root)-[n:REQUIRES*0..]->(m:Module)"
-        "OPTIONAL MATCH (m)-[inc:INCLUDE*]->(s:Skill) "
-        "RETURN collect(DISTINCT m) AS modules, collect(DISTINCT s) AS skills, collect(DISTINCT n) as nextRelations, collect(DISTINCT inc) AS includeRelations;"
-    )
+    cypq = """
+        MATCH (:Subject{code: $topic_code})-[:LEARN]->(root:Module) 
+        MATCH (root)-[:REQUIRES*0..]->(m:Module) 
+        WITH collect(DISTINCT m) AS all_modules
+        UNWIND all_modules AS m1
+        UNWIND all_modules AS m2
+        MATCH (m1)-[r:REQUIRES]->(m2)
+        WHERE m1 <> m2
+        RETURN collect(DISTINCT all_modules) AS modules, 
+       collect(DISTINCT r) AS nextRelations;
+    """
     raw, _ = await adb.cypher_query(cypq, {"topic_code": topic})
     row: tuple[
         list[Node],
-        list[Node],
-        list[tuple[Relationship, ...]],
         list[tuple[Relationship, ...]],
     ] = raw[0]
-    modules, skills, next_rel, inc_rel = row
-
-    modules_nd = [NodeGet.from_neo4j(m) for m in modules]
-    skills_nd = [NodeGet.from_neo4j(m) for m in skills]
+    modules, next_rel = row
+    if not modules:
+        return GraphGet(nodes=[], edges=[])
+    modules_nd = [NodeGet.from_neo4j(m) for m in modules[0]]
     next_edg = [EdgeGet.from_neo4j(m) for m in next_rel if m != []]
-    inc_edg = [EdgeGet.from_neo4j(m) for m in inc_rel if m != []]
 
-    return GraphGet(nodes=modules_nd + skills_nd, edges=next_edg + inc_edg)
+    return GraphGet(nodes=modules_nd, edges=next_edg)
 
 
+@cache_query()
 async def get_next_modules(id: str) -> ModulePath:
     cypq = (
         "MATCH (prev:Module)-[:REQUIRES]->(next:Module) "
@@ -61,4 +66,4 @@ async def get_next_modules(id: str) -> ModulePath:
 
 
 async def get_path_beetwen_modules(from_id: str, to_id: str) -> ModulePath:
-    await roadmap.get_roadmap([from_id], [to_id])
+    return await roadmap.get_roadmap([from_id], [to_id])

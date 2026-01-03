@@ -2,6 +2,7 @@ import typing
 from tortoise import fields
 from tortoise.contrib.postgres.indexes import GinIndex
 
+from db import constants
 from db.models.base import BaseMixin, BaseModel
 
 if typing.TYPE_CHECKING:
@@ -16,9 +17,11 @@ class UserPath(BaseMixin, BaseModel):
     path: dict[str, str] = fields.JSONField()
     path_hash = fields.CharField(max_length=257, index=True)
     status: fields.ForeignKeyRelation["Status"] = fields.ForeignKeyField(
-        "server.Status", on_delete=fields.SET_DEFAULT, default=1
+        "server.Status", on_delete=fields.SET_DEFAULT, default=constants.IN_PROGRESS
     )
-    current_module_code = fields.CharField(max_length=128, index=True, null=True)
+    path_len = fields.IntField()
+    current_module_code = fields.CharField(max_length=128, index=True)
+    current_step = fields.IntField(default=0)
 
     class Meta:
         indexes = [GinIndex(fields=["path"], name="idx_user_path_gin")]
