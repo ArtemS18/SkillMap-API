@@ -5,9 +5,10 @@ from functools import wraps
 import pickle
 
 T = TypeVar("AsyncFunc", bound=Callable[..., Coroutine[Any, Any, Any]])
+CHACHING_TIME = 600
 
 
-def cache_query(time_limit: int = 600):
+def cache_query(time_limit: int = CHACHING_TIME):
     def decorator(func: T) -> T:
         @wraps(func)
         async def wrapper(*args, **kwargs):
