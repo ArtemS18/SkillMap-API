@@ -1,18 +1,18 @@
 import pytest
 import pytest_asyncio
 from tortoise import Tortoise
+from app.server.server import app
 
-from server.server import app
 from tests.utils import client_manager, ClientManagerType
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def async_client() -> ClientManagerType:
     async with client_manager(app) as c:
         yield c
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def anyio_backend() -> str:
     return "asyncio"
 
