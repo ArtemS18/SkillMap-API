@@ -2,6 +2,7 @@ from fastapi import APIRouter, Security
 from depends import get_current_user_id
 from schemas import skill_schema
 from service import progress
+from gigachat.client import gigachat_client
 
 
 path_router = APIRouter(prefix="/my-roadmap", tags=["My Roadmap"])
@@ -9,10 +10,12 @@ path_router = APIRouter(prefix="/my-roadmap", tags=["My Roadmap"])
 
 @path_router.post("/create", response_model=skill_schema.UserPath)
 async def create_user_path(
-    schema: skill_schema.ModulesIn,
+    schema: skill_schema.UserPromt,
     user_id: int = Security(get_current_user_id, scopes=["roadmap.write"]),
 ):
-    return await progress.create_user_path(user_id, schema.target_modules)
+    raw = await gigachat_client.send_roadmap_promt(schema.message)
+    path_info = skill_schema.CreateRoadmapSchema.model_validate(raw)
+    return await progress.create_user_path(user_id, path_info)
 
 
 @path_router.get("/", response_model=skill_schema.UserPath)

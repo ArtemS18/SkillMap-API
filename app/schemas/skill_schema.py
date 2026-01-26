@@ -6,6 +6,15 @@ class ModulesIn(BaseModel):
     target_modules: list[str]
 
 
+class UserPromt(BaseModel):
+    message: str
+
+
+class CreateRoadmapSchema(BaseModel):
+    target_skills: list[Optional[str]]
+    known_skills: list[Optional[str]]
+
+
 class SkillOut(BaseModel):
     id: str
     name: str

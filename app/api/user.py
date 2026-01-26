@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, Security
+from fastapi import APIRouter, Security
 from depends import get_current_user_id
 from service import progress
 
