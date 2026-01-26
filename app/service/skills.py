@@ -1,15 +1,12 @@
-import asyncio
 from redis_client.cache import cache_query
-from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
-from schemas.graph_schema import GraphGet, NodeGet, EdgeGet
-from neomodel import adb
-from neo4j.graph import Node, Relationship
-from neo4j_client import models
+from schemas.skill_schema import ModulePath
+from schemas.graph_schema import GraphGet
+from neo4j_client import client
 
 from service import roadmap
 
 
-@cache_query()
+@cache_query(time_limit=60 * 60)  # 1 HOURE
 async def get_graph_by_topic(topic: str) -> GraphGet:
     cypq = """
         MATCH (:Subject{code: $topic_code})-[:LEARN]->(root:Module) 
@@ -22,18 +19,8 @@ async def get_graph_by_topic(topic: str) -> GraphGet:
         RETURN collect(DISTINCT all_modules) AS modules, 
        collect(DISTINCT r) AS nextRelations;
     """
-    raw, _ = await adb.cypher_query(cypq, {"topic_code": topic})
-    row: tuple[
-        list[Node],
-        list[tuple[Relationship, ...]],
-    ] = raw[0]
-    modules, next_rel = row
-    if not modules:
-        return GraphGet(nodes=[], edges=[])
-    modules_nd = [NodeGet.from_neo4j(m) for m in modules[0]]
-    next_edg = [EdgeGet.from_neo4j(m) for m in next_rel if m != []]
-
-    return GraphGet(nodes=modules_nd, edges=next_edg)
+    graph = await client.get_graph(cypq, {"topic_code": topic})
+    return graph
 
 
 @cache_query()
@@ -45,24 +32,8 @@ async def get_next_modules(id: str) -> ModulePath:
         "RETURN next, collect(DISTINCT skill) AS skills "
         "ORDER BY next.code;"
     )
-    raw, _ = await adb.cypher_query(cypq, {"id": id})
-    roadmap = []
-    for row in raw:
-        m: Node = row[0]
-        skills: list[Node] = row[1]
-        roadmap.append(
-            ModuleOut(
-                id=m._properties.get("code"),
-                name=m._properties.get("name"),
-                skills=[
-                    SkillOut(
-                        id=s._properties.get("code"), name=s._properties.get("name")
-                    )
-                    for s in skills
-                ],
-            )
-        )
-    return ModulePath(path=roadmap)
+    path = await client.get_path(cypq, {"id": id})
+    return path
 
 
 async def get_path_beetwen_modules(from_id: str, to_id: str) -> ModulePath:

@@ -17,14 +17,15 @@ async def get_learned_skills(user_id: int) -> list[str]:
 
 
 async def create_user_path(
-    user_id: int, target_skills: list[str]
+    user_id: int, path_info: skill_schema.CreateRoadmapSchema
 ) -> skill_schema.UserPath:
-    learned_skills = await UserModuleProgress.filter(
-        user_id=user_id, status_id=CLOSED
-    ).all()
-    path = await roadmap.get_roadmap(
-        [s.module_code for s in learned_skills], target_skills
-    )
+    # learned_skills = await UserModuleProgress.filter(
+    #     user_id=user_id, status_id=CLOSED
+    # ).all()
+    # path = await roadmap.get_roadmap(
+    #     [s.module_code for s in learned_skills], path_info.target_skills
+    # )
+    path = await roadmap.get_roadmap(path_info.known_skills, path_info.target_skills)
     hash_object = sha256(path.model_dump_json().encode())
     path_hash = hash_object.hexdigest()
 
@@ -67,6 +68,7 @@ async def create_user_path(
         )
 
 
+# TODO: add caching for this method and invalidations
 async def get_current_user_path(user_id: int) -> skill_schema.UserPath:
     user_path = await UserPath.get_or_none(user_id=user_id, status=IN_PROGRESS)
     if user_path is None:
