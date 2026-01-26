@@ -1,13 +1,34 @@
+from collections.abc import Callable
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from logging import getLogger
+import time
+from typing import AsyncGenerator, Awaitable
 from fastapi.responses import JSONResponse
 from tortoise import Tortoise, generate_config
 from tortoise.contrib.fastapi import RegisterTortoise
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from redis_client import client
+
+from logger import _init_logger
+from redis_client import client as redis_client
+from neo4j_client import client as neo4j_client
+from gigachat.client import gigachat_client
 from config import settings
 from service import exception as service_exp
+
+_init_logger()
+log = getLogger(__name__)
+
+
+async def add_process_time_header(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    process_time = time.perf_counter() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    log.info("%s %s: %.3f ms", request.method, request.url, process_time * 1000)
+    return response
 
 
 def _init_router(_app: FastAPI) -> None:
@@ -24,6 +45,7 @@ def _init_middleware(_app: FastAPI) -> None:
         allow_methods=settings.cors_allow_methods,
         allow_headers=settings.cors_allow_headers,
     )
+    _app.middleware("http")(add_process_time_header)
 
 
 @asynccontextmanager
@@ -41,8 +63,11 @@ async def lifespan_test(_app: FastAPI) -> AsyncGenerator[None, None]:
             add_exception_handlers=True,
             _create_db=True,
         ):
+            await neo4j_client.connect(test_uri=settings.neo4j_test_url)
             yield
-    except Exception as e:
+            await neo4j_client.disconnect()
+            await redis_client.disconnect()
+    except Exception:
         raise
     finally:
         await Tortoise._drop_databases()
@@ -61,9 +86,13 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
                 generate_schemas=True,
                 add_exception_handlers=True,
             ):
+                await neo4j_client.connect()
+                await gigachat_client.connect()
                 yield
-                await client.disconnect()
-    except Exception as e:
+                await neo4j_client.disconnect()
+                await gigachat_client.disconnect()
+                await redis_client.disconnect()
+    except Exception:
         raise
 
 
