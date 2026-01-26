@@ -18,6 +18,7 @@ class DevelopmentConfig(BaseSettings):
     cors_allow_headers: list[str] = ["*"]
 
     use_sentry: bool = False
+    log_level: str = "DEBUG"
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,

@@ -17,6 +17,8 @@ class ProductionConfig(BaseSettings):
     cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE"]
     cors_allow_headers: list[str] = ["*"]
 
+    log_level: str = "INFO"
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,
         env_file_encoding="utf-8",
