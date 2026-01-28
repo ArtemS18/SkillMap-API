@@ -1,3 +1,6 @@
+## Frontend
+https://github.com/ArtemS18/SkillMap-frontend
+
 ## Table of Contents
 
 - [Setup](#setup)
