@@ -22,7 +22,7 @@ MODULE_ORDER = [
 
 @cache_query()
 async def get_roadmap(from_: list[str], to_: list[str]) -> ModulePath:
-    if from_ == []:
+    if not from_:
         from_ = ["python_syntax_types"]
     cypq = """WITH $modulesOrder AS trackOrder
 

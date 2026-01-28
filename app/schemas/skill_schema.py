@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ModulesIn(BaseModel):
@@ -12,7 +12,7 @@ class UserPromt(BaseModel):
 
 class CreateRoadmapSchema(BaseModel):
     target_skills: list[Optional[str]]
-    known_skills: list[Optional[str]]
+    known_skills: list[Optional[str]] = Field([])
 
 
 class SkillOut(BaseModel):

@@ -67,4 +67,5 @@
   "target_skills": ["numpy_basics", "pandas_basics", "typing_mypy"],
   "known_skills": ["python_syntax_types", "functions_basics", "collections_basics"]
 }
+ПРИ ЭТОМ даже если ты считатешь что нет "known_skills" отправляей его как "known_skills": []
 Давай, анализируй запрос пользователя строго по этим правилам.

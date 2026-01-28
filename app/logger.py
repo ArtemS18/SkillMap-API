@@ -8,5 +8,5 @@ LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
 
 def _init_logger():
     logging.basicConfig(
-        format=LOG_FORMAT, datefmt=LOG_DATEFMT, level=LOG_LOVELS[settings.log_level]
+        format=LOG_FORMAT, datefmt=LOG_DATEFMT, level=LOG_LOVELS["INFO"]
     )

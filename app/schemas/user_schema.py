@@ -16,6 +16,7 @@ class CreateUser(_BaseUser):
 
 class OutUser(_BaseUser):
     id: int
+    have_active_path: bool
     created_at: datetime
     updated_at: datetime
 

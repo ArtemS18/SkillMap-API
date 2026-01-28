@@ -1,3 +1,4 @@
+from app.schemas import user_schema
 from db.models.status import Status
 from db.constants import IN_PROGRESS, CLOSED
 from db.models import UserPath, User, UserModuleProgress
@@ -14,6 +15,13 @@ async def get_learned_skills(user_id: int) -> list[str]:
         user_id=user_id, status_id=CLOSED
     ).all()
     return [s.module_code for s in learned_skills]
+
+
+async def get_user_by_id(user_id: int) -> user_schema.OutUser:
+    user = await User.get_or_none(id=user_id)
+    if user is None:
+        raise exception.NotFoundError("user")
+    return user
 
 
 async def create_user_path(

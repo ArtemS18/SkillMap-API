@@ -6,6 +6,16 @@ from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
 from config import settings
 
 
+def normalize_list(data):
+    if not data:
+        return []
+
+    if isinstance(data[0], list):
+        return [item for sublist in data for item in sublist]
+
+    return data
+
+
 class Neo4jClient:
     def __init__(self, uri: str, login: str, pwd: str):
         self.driver: AsyncDriver | None = None
@@ -38,8 +48,9 @@ class Neo4jClient:
         modules, next_rel = row
         if not modules:
             return GraphGet(nodes=[], edges=[])
-        modules_nd = [NodeGet.from_neo4j(m) for m in modules[0]]
-        next_edg = [EdgeGet.from_neo4j(m) for m in next_rel if m != []]
+
+        modules_nd = [NodeGet.from_neo4j(m) for m in normalize_list(modules)]
+        next_edg = [EdgeGet.from_neo4j(m) for m in normalize_list(next_rel) if m != []]
         return GraphGet(nodes=modules_nd, edges=next_edg)
 
     async def get_path(self, query: str, params: dict):
@@ -61,6 +72,20 @@ class Neo4jClient:
                 )
             )
         return ModulePath(path=roadmap)
+
+    async def get_skill(self, query: str, params: dict):
+        raw = await client.execute(query, params)
+        row = raw[0]
+        m: Node = row[0]
+        skills: list[Node] = row[1]
+        return ModuleOut(
+            id=m._properties.get("code"),
+            name=m._properties.get("name"),
+            skills=[
+                SkillOut(id=s._properties.get("code"), name=s._properties.get("name"))
+                for s in skills
+            ],
+        )
 
     async def disconnect(self):
         if self.driver:

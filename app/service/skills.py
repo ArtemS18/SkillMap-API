@@ -1,12 +1,12 @@
 from redis_client.cache import cache_query
-from schemas.skill_schema import ModulePath
+from schemas.skill_schema import ModuleOut, ModulePath
 from schemas.graph_schema import GraphGet
 from neo4j_client import client
 
 from service import roadmap
 
 
-@cache_query(time_limit=60 * 60)  # 1 HOURE
+@cache_query(time_limit=60 * 3, caching=False)  # 3 MINUTE
 async def get_graph_by_topic(topic: str) -> GraphGet:
     cypq = """
         MATCH (:Subject{code: $topic_code})-[:LEARN]->(root:Module) 
@@ -20,6 +20,7 @@ async def get_graph_by_topic(topic: str) -> GraphGet:
        collect(DISTINCT r) AS nextRelations;
     """
     graph = await client.get_graph(cypq, {"topic_code": topic})
+    print(graph)
     return graph
 
 
@@ -38,3 +39,30 @@ async def get_next_modules(id: str) -> ModulePath:
 
 async def get_path_beetwen_modules(from_id: str, to_id: str) -> ModulePath:
     return await roadmap.get_roadmap([from_id], [to_id])
+
+
+@cache_query()
+async def get_skill(id: str) -> ModuleOut:
+    cypq = (
+        "MATCH (m:Module)"
+        "WHERE m.code = $id "
+        "OPTIONAL MATCH (m)-[:INCLUDE]->(skill:Skill) "
+        "RETURN m, collect(DISTINCT skill) AS skills "
+        "ORDER BY m.code;"
+    )
+    skill = await client.get_skill(cypq, {"id": id})
+    return skill
+
+
+@cache_query(caching=False)
+async def get_node_graph(node_ids: list[str]) -> GraphGet:
+    print(node_ids)
+    cypq = (
+        "MATCH (m:Module)"
+        "WHERE m.code IN $ids "
+        "OPTIONAL MATCH (m)-[r]->(other:Module) "
+        "WHERE other.code IN $ids "
+        "RETURN collect(DISTINCT m) AS modules, collect(r) AS nextRelations;"
+    )
+    skill = await client.get_graph(cypq, {"ids": node_ids})
+    return skill

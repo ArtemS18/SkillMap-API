@@ -25,4 +25,4 @@ class UserPath(BaseMixin, BaseModel):
 
     class Meta:
         indexes = [GinIndex(fields=["path"], name="idx_user_path_gin")]
-        unique_together = (("user_id", "path_hash"),)
+        # unique_together = (("user_id", "path_hash"),)
