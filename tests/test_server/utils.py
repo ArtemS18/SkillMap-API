@@ -1,4 +1,4 @@
-from app.schemas import skill_schema, user_schema
+from app.pydantic_schemas import skill_schema, user_schema
 
 
 def create_user():

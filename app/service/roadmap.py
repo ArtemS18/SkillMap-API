@@ -1,6 +1,6 @@
 import asyncio
 from redis_client.cache import cache_query
-from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
+from pydantic_schemas.skill_schema import ModuleOut, ModulePath, SkillOut
 from neo4j_client import client
 from neo4j.graph import Node
 

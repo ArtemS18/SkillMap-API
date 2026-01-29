@@ -139,6 +139,11 @@ async def validation_service_exp(req: Request, exption: service_exp.ServiceExept
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": "Bad credentials"},
             )
+        case service_exp.BadJWTCredentials:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "Bad JWT credentials"},
+            )
         case service_exp.AlreadyExist:
             _exption: service_exp.AlreadyExist = exption
             return JSONResponse(

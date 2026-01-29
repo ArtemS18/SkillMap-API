@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Security
+from pydantic_schemas import skill_schema
 from depends import get_current_user_id
-from schemas import skill_schema
 from service import progress
 from gigachat.client import gigachat_client
 

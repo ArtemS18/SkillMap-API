@@ -1,7 +1,7 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Body, Depends, Form, status
 from fastapi.security import OAuth2PasswordRequestForm
-from schemas import user_schema, auth_schema
+from pydantic_schemas import user_schema, auth_schema
 from service import auth
 
 auth_router = APIRouter(prefix="/auth", tags=["Autho"])
@@ -17,5 +17,12 @@ async def register(
 @auth_router.post("/login")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> auth_schema.TokenOut:
+) -> auth_schema.AuthOut:
     return await auth.login(form_data)
+
+
+@auth_router.post("/refresh")
+async def refresh_token(
+    schema: auth_schema.RefreshTokenIn,
+) -> auth_schema.AuthOut:
+    return await auth.refresh(schema.refresh_token)

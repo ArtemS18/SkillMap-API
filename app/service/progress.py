@@ -1,10 +1,9 @@
-from app.schemas import user_schema
 from db.models.status import Status
 from db.constants import IN_PROGRESS, CLOSED
 from db.models import UserPath, User, UserModuleProgress
 from service import roadmap, exception
 from hashlib import sha256
-from schemas import skill_schema
+from pydantic_schemas import skill_schema, user_schema
 from tortoise.exceptions import IntegrityError
 from tortoise.transactions import in_transaction
 from tortoise import Tortoise

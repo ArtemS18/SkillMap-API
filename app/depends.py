@@ -7,6 +7,7 @@ import redis
 
 
 oauth2_scheme = OAuth2PasswordBearer(
+    refreshUrl="/api/auth/refresh",
     tokenUrl="/api/auth/login",
     scheme_name="Access token",
     scopes={
@@ -25,7 +26,7 @@ def get_current_user_id(
     else:
         authenticate_value = "Bearer"
     try:
-        user_claims = jwt_utils.verifi_token(token)
+        user_claims = jwt_utils.verifi_token_typ(token, "access")
     except exception.BadJWTCredentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

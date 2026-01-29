@@ -10,3 +10,8 @@ class BaseMixin(BaseModel):
     id: int = fields.BigIntField(primary_key=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True, null=True)
     updated_at: datetime = fields.DatetimeField(auto_now=True, null=True)
+
+
+class TimeMixin(BaseModel):
+    created_at: datetime = fields.DatetimeField(auto_now_add=True, null=True)
+    updated_at: datetime = fields.DatetimeField(auto_now=True, null=True)

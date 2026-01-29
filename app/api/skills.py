@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from schemas import graph_schema, skill_schema
+from pydantic_schemas import graph_schema, skill_schema
 from service import skills as skill_service
 from depends import get_current_user_id, request_limit
 

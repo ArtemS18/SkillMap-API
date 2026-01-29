@@ -30,13 +30,18 @@ aerich = "^0.9.2"
 tomlkit = "^0.13.3"
 redis = "^7.1.0"
 openai = "^2.15.0"
-gunicorn = "^24.1.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.4"
 requests = "^2.28.1"
 asgi-lifespan = "^2.1.0"
 pytest-asyncio = "^0.24.0"
+
+
+[[tool.poetry.source]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "supplemental"
 
 [tool.aerich]
 location = "app/db/migrations"

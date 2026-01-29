@@ -2,7 +2,7 @@ from httpx import AsyncClient
 from unittest.mock import AsyncMock, MagicMock
 import pytest
 
-from app.schemas import skill_schema
+from app.pydantic_schemas import skill_schema
 from app.server.server import app
 
 

@@ -1,8 +1,8 @@
 from neo4j import AsyncGraphDatabase, AsyncDriver
 from neo4j.graph import Node, Relationship
 
-from schemas.graph_schema import EdgeGet, GraphGet, NodeGet
-from schemas.skill_schema import ModuleOut, ModulePath, SkillOut
+from pydantic_schemas.graph_schema import EdgeGet, GraphGet, NodeGet
+from pydantic_schemas.skill_schema import ModuleOut, ModulePath, SkillOut
 from config import settings
 
 

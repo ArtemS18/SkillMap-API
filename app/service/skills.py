@@ -1,6 +1,6 @@
 from redis_client.cache import cache_query
-from schemas.skill_schema import ModuleOut, ModulePath
-from schemas.graph_schema import GraphGet
+from pydantic_schemas.skill_schema import ModuleOut, ModulePath
+from pydantic_schemas.graph_schema import GraphGet
 from neo4j_client import client
 
 from service import roadmap
