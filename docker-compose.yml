@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   neo4j:
-    image: neo4j:5
+    image: neo4j:latest
     volumes:
       - neo4j-logs:/logs
       - neo4j-config:/config

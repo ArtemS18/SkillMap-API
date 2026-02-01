@@ -35,7 +35,15 @@ services:
       - .env
     restart: unless-stopped
 
-  test-neo4j:
+  redis:
+    image: redis:7.4.0
+    ports:
+      - "6380:6379"
+    networks:
+      - postgres
+      - backend
+
+  neo4j:
     image: neo4j:5
     volumes:
       - neo4j-logs:/logs
@@ -53,6 +61,21 @@ services:
     restart: always
     networks:
       - backend
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    environment:
+    - TZ=Europe/Moscow
+    - MAILDEV_WEB_PORT=1080
+    - MAILDEV_SMTP_PORT=1025
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "3"
 
 
 networks:
