@@ -1,9 +1,12 @@
+from logging import getLogger
 from redis_client.cache import cache_query
 from pydantic_schemas.skill_schema import ModuleOut, ModulePath
 from pydantic_schemas.graph_schema import GraphGet
 from neo4j_client import client
 
 from service import roadmap
+
+log = getLogger(__name__)
 
 
 @cache_query(time_limit=60 * 3, caching=False)  # 3 MINUTE
@@ -20,7 +23,7 @@ async def get_graph_by_topic(topic: str) -> GraphGet:
        collect(DISTINCT r) AS nextRelations;
     """
     graph = await client.get_graph(cypq, {"topic_code": topic})
-    print(graph)
+    log.info(graph)
     return graph
 
 
@@ -56,7 +59,7 @@ async def get_skill(id: str) -> ModuleOut:
 
 @cache_query(caching=False)
 async def get_node_graph(node_ids: list[str]) -> GraphGet:
-    print(node_ids)
+    log.info(node_ids)
     cypq = (
         "MATCH (m:Module)"
         "WHERE m.code IN $ids "

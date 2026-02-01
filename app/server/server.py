@@ -150,3 +150,8 @@ async def validation_service_exp(req: Request, exption: service_exp.ServiceExept
                 status_code=status.HTTP_409_CONFLICT,
                 content={"detail": f"{_exption.name.capitalize()} already exist"},
             )
+        case service_exp.InvalideVerifyCode:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid verify code"},
+            )

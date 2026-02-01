@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from pydantic import EmailStr
 from db import models
 from tortoise.contrib.pydantic import pydantic_model_creator
 
@@ -11,6 +13,7 @@ _BaseUser = pydantic_model_creator(
 
 
 class CreateUser(_BaseUser):
+    email: EmailStr
     password: str
 
 

@@ -1,4 +1,5 @@
 from hashlib import md5
+from logging import getLogger
 from typing import Any, Callable, Coroutine, TypeVar
 from redis_client.client import get_client
 from functools import wraps
@@ -6,6 +7,8 @@ import pickle
 
 T = TypeVar("AsyncFunc", bound=Callable[..., Coroutine[Any, Any, Any]])
 CHACHING_TIME = 600
+
+log = getLogger(__name__)
 
 
 def cache_query(time_limit: int = CHACHING_TIME, caching=True):
@@ -23,10 +26,10 @@ def cache_query(time_limit: int = CHACHING_TIME, caching=True):
                 key = f"cache:{func.__name__}:{args_hash}"
                 raw = await redis.get(key)
                 if raw is not None:
-                    print(f"HIT: {key}")
+                    log.info(f"HIT: {key}")
                     return pickle.loads(raw)
                 else:
-                    print(f"MISS: {key}")
+                    log.info(f"MISS: {key}")
             res = await func(*args, **kwargs)
             if caching:
                 await redis.setex(key, time_limit, pickle.dumps(res))

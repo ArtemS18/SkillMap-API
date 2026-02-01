@@ -109,7 +109,7 @@ class GigaChatClient:
                     },
                 )
 
-            print(f"Результат: {response.json()}")
+            log.info(f"Результат: {response.json()}")
             return response
 
         fail_counter = 0

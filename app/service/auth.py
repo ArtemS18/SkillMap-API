@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import uuid
 from fastapi.security import OAuth2PasswordRequestForm
+from redis_client.client import get_client
 from db import models
 from tortoise.exceptions import IntegrityError
 from tortoise.transactions import in_transaction
@@ -18,6 +19,17 @@ async def register(create: user_schema.CreateUser) -> user_schema.OutUser:
         return user_schema.OutUser.model_validate(user)
     except IntegrityError:
         raise service_exp.AlreadyExist("user")
+
+
+async def check_if_user_exist(email: str) -> bool:
+    is_user_exists = await models.User.exists(email=email, email_verified=False)
+    if not is_user_exists:
+        raise service_exp.NotFoundError("user")
+    redis = get_client()
+    exits = await redis.get(f"verify-code:{email}")
+    if exits:
+        raise service_exp.AlreadyExist("verify code")
+    return True
 
 
 async def create_refresh_token_and_save(user_id: int, scopes: list[str]) -> str:

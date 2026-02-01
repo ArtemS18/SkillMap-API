@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from service import jwt_utils, exception
 from redis_client import client
 import redis
+from logging import getLogger
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -16,6 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(
         "roadmap.write": "Create roadmap.",
     },
 )
+log = getLogger(__name__)
 
 
 def get_current_user_id(
@@ -56,7 +58,7 @@ def request_limit(req_per_sec: int = 10):
                 await r.setex(key, 1, 1)
                 return
             req_count = int(raw)
-            print(req_count)
+            log.info(req_count)
             if req_count + 1 > req_per_sec:
                 await r.setex(key, 5, req_count + 1)
                 await r.unwatch()

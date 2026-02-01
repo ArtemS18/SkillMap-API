@@ -23,3 +23,12 @@ class RefreshTokenOut(BaseModel):
 
 
 class AuthOut(AccessTokenOut, RefreshTokenOut): ...
+
+
+class EmailVerifyIn(BaseModel):
+    to_email: str
+
+
+class CodeVerifyIn(BaseModel):
+    email: str
+    code: str
