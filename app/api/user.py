@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, Security, Query
+from app.pydantic_schemas import skill_schema
 from pydantic_schemas import graph_schema, user_schema
 from depends import get_current_user_id
 from service import progress, skills
@@ -12,6 +13,14 @@ async def get_user_learned_skills(
     user_id: int = Security(get_current_user_id, scopes=["me"]),
 ):
     return await progress.get_learned_skills(user_id)
+
+
+@user_router.get("/recommends", response_model=skill_schema.ModulePath)
+async def get_user_recs(
+    limit: int = Query(5),
+    user_id: int = Security(get_current_user_id, scopes=["me"]),
+):
+    return await progress.get_user_recommends(user_id, limit)
 
 
 @user_router.get("/me", response_model=user_schema.OutUser)

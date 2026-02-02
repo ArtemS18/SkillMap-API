@@ -18,6 +18,14 @@ async def create_user_path(
     return await progress.create_user_path(user_id, path_info)
 
 
+@path_router.post("/create-by-skills", response_model=skill_schema.UserPath)
+async def create_user_path_(
+    schema: skill_schema.CreateRoadmapSchema,
+    user_id: int = Security(get_current_user_id, scopes=["roadmap.write"]),
+):
+    return await progress.create_user_path(user_id, schema)
+
+
 @path_router.get("/", response_model=skill_schema.UserPath)
 async def get_user_path(
     user_id: int = Security(get_current_user_id, scopes=["roadmap.read"]),

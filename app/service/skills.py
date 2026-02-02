@@ -40,6 +40,19 @@ async def get_next_modules(id: str) -> ModulePath:
     return path
 
 
+@cache_query(caching=False)
+async def get_next_modules_by_ids(ids: list[str], limit: int) -> ModulePath:
+    cypq = (
+        "MATCH (prev:Module)-[:REQUIRES]->(next:Module) "
+        "WHERE prev.code IN $ids AND NOT next.code IN $ids "
+        "OPTIONAL MATCH (next)-[:INCLUDE]->(skill:Skill) "
+        "RETURN next, collect(DISTINCT skill) AS skills "
+        "ORDER BY next.code LIMIT $limit;"
+    )
+    path = await client.get_path(cypq, {"ids": ids, "limit": limit})
+    return path
+
+
 async def get_path_beetwen_modules(from_id: str, to_id: str) -> ModulePath:
     return await roadmap.get_roadmap([from_id], [to_id])
 

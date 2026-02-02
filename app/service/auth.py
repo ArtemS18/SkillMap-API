@@ -48,7 +48,9 @@ async def create_refresh_token_and_save(user_id: int, scopes: list[str]) -> str:
 async def login(cred: OAuth2PasswordRequestForm) -> auth_schema.AuthOut:
     exist_user = await models.User.get_or_none(email=cred.username)
     if exist_user is None:
-        raise service_exp.NotFoundError(f"user with email = {cred.username}")
+        raise service_exp.NotFoundError("user")
+    if not exist_user.email_verified:
+        raise service_exp.BadRequest("email is not verified")
     if not pwd.verifi_password(cred.password, exist_user.hashed_password):
         raise service_exp.BadCredentials
 

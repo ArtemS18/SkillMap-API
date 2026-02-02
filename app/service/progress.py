@@ -1,12 +1,15 @@
+from logging import getLogger
 from db.models.status import Status
 from db.constants import IN_PROGRESS, CLOSED
 from db.models import UserPath, User, UserModuleProgress
-from service import roadmap, exception
+from service import roadmap, exception, skills
 from hashlib import sha256
 from pydantic_schemas import skill_schema, user_schema
 from tortoise.exceptions import IntegrityError
 from tortoise.transactions import in_transaction
 from tortoise import Tortoise
+
+log = getLogger(__name__)
 
 
 async def get_learned_skills(user_id: int) -> list[str]:
@@ -23,16 +26,30 @@ async def get_user_by_id(user_id: int) -> user_schema.OutUser:
     return user
 
 
+async def get_user_recommends(user_id: int, limit=5) -> skill_schema.ModulePath:
+    ids = await get_learned_skills(user_id)
+    recs = await skills.get_next_modules_by_ids(ids, limit)
+    return recs
+
+
 async def create_user_path(
     user_id: int, path_info: skill_schema.CreateRoadmapSchema
 ) -> skill_schema.UserPath:
-    # learned_skills = await UserModuleProgress.filter(
-    #     user_id=user_id, status_id=CLOSED
-    # ).all()
-    # path = await roadmap.get_roadmap(
-    #     [s.module_code for s in learned_skills], path_info.target_skills
-    # )
-    path = await roadmap.get_roadmap(path_info.known_skills, path_info.target_skills)
+    user_progress = await UserModuleProgress.filter(
+        user_id=user_id, status_id=CLOSED
+    ).all()
+    log.info("User progress: %s", user_progress)
+    learned_skills = [s.module_code for s in user_progress]
+    known_skills = learned_skills if learned_skills else path_info.known_skills
+    path = await roadmap.get_roadmap(known_skills, path_info.target_skills)
+
+    if not path or not path.path:
+        path = await roadmap.get_roadmap([], path_info.target_skills)
+        log.warning("Retry to recreate path for user_id: %s", user_id)
+        if not path or not path.path:
+            log.warning("Failed to generate path for user_id: %s", user_id)
+            raise exception.NotFoundError("generate path")
+
     hash_object = sha256(path.model_dump_json().encode())
     path_hash = hash_object.hexdigest()
 
@@ -45,10 +62,7 @@ async def create_user_path(
 
         current_module_code = None
         module_path_id = 0
-        if path and path.path:
-            current_module_code = path.path[module_path_id].id
-        else:
-            raise exception.NotFoundError("generate path")
+        current_module_code = path.path[module_path_id].id
 
         lenght = len(path.path)
         try:
@@ -61,7 +75,8 @@ async def create_user_path(
                 current_step=module_path_id,
                 path_len=lenght,
             )
-        except IntegrityError:
+        except IntegrityError as e:
+            log.error("IntegrityError in create_user_path: %s", e, exc_info=True)
             raise exception.AlreadyExist("path")
 
         user.have_active_path = True
