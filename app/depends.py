@@ -36,8 +36,9 @@ def get_current_user_id(
             headers={"WWW-Authenticate": authenticate_value},
         )
 
+    user_scopes = [] if not user_claims.scope else user_claims.scope.split(" ")
     for scope in security_scopes.scopes:
-        if scope not in user_claims.scope:
+        if scope not in user_scopes:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Not enough permissions",

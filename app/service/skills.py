@@ -1,10 +1,11 @@
 from logging import getLogger
 from redis_client.cache import cache_query
-from pydantic_schemas.skill_schema import ModuleOut, ModulePath
+from pydantic_schemas.skill_schema import Link, ModuleDetails, ModuleOut, ModulePath
 from pydantic_schemas.graph_schema import GraphGet
 from neo4j_client import client
+from db import models
 
-from service import roadmap
+from service import roadmap, exception
 
 log = getLogger(__name__)
 
@@ -82,3 +83,20 @@ async def get_node_graph(node_ids: list[str]) -> GraphGet:
     )
     skill = await client.get_graph(cypq, {"ids": node_ids})
     return skill
+
+
+async def get_skill_details(id: str) -> ModuleDetails:
+    skill = await get_skill(id)
+    if skill is None:
+        raise exception.NotFoundError("module")
+    details = await models.ModulesInfo.get_or_none(code=id)
+    if details is None:
+        raise exception.NotFoundError("module details")
+
+    links = await models.Resource.filter(links__module_code=id)
+    return ModuleDetails(
+        **skill.model_dump(),
+        level=details.level,
+        description=details.description,
+        links=[Link(url=link.url, title=link.title) for link in links],
+    )

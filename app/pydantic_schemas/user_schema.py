@@ -7,7 +7,7 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 _BaseUser = pydantic_model_creator(
     models.User,
     name="BaseUser",
-    include=["email", "firstname", "lastname"],
+    include=["email", "name"],
     exclude_readonly=True,
 )
 

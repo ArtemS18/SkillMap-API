@@ -22,7 +22,8 @@ class RefreshTokenOut(BaseModel):
     refresh_token: str
 
 
-class AuthOut(AccessTokenOut, RefreshTokenOut): ...
+class AuthOut(AccessTokenOut, RefreshTokenOut):
+    scopes: str
 
 
 class EmailVerifyIn(BaseModel):

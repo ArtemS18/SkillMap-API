@@ -6,7 +6,7 @@ class JWTBaseClaims(BaseModel):
     jti: str | None = None
     typ: str
     sub: str
-    scope: list[str | None] = []
+    scope: str | None = None
     exp: datetime
     iss: str
     iat: datetime

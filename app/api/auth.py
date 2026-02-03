@@ -1,8 +1,9 @@
 from typing import Annotated
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Query, status
+from fastapi.responses import RedirectResponse, PlainTextResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic_schemas import user_schema, auth_schema
-from service import auth, email
+from pydantic_schemas import user_schema, auth_schema, oauth2_schema
+from service import auth, email, google_oauth
 
 auth_router = APIRouter(prefix="/auth", tags=["Autho"])
 
@@ -44,3 +45,15 @@ async def verify_email(
 ):
     await email.verify_email_code(schema.email, schema.code)
     return
+
+
+@auth_router.get("/google", response_class=RedirectResponse)
+async def google_oauth_handler():
+    redirect_url = google_oauth.get_oauth_url()
+    return RedirectResponse(redirect_url, status.HTTP_302_FOUND)
+
+
+@auth_router.post("/google/callback", response_model=auth_schema.AuthOut)
+async def google_oauth_callback(schema: oauth2_schema.OAuthIn):
+    cred = await google_oauth.oauth_callback(schema.code)
+    return await auth.login_by_oauth(cred)

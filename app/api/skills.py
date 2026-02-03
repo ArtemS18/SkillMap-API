@@ -26,6 +26,11 @@ async def handel_get_skill(id: str):
     return await skill_service.get_skill(id)
 
 
+@skill_router.get("/{id}/details", response_model=skill_schema.ModuleDetails)
+async def handel_get_skill_details(id: str):
+    return await skill_service.get_skill_details(id)
+
+
 @skill_router.get("/{from_id}/path-to/{to_id}", response_model=skill_schema.ModulePath)
 async def handel_path_to(from_id: str, to_id: str):
     return await skill_service.get_path_beetwen_modules(from_id, to_id)

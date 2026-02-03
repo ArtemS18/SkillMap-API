@@ -26,6 +26,17 @@ class ModuleOut(BaseModel):
     skills: Optional[list[SkillOut]]
 
 
+class Link(BaseModel):
+    url: str
+    title: str
+
+
+class ModuleDetails(ModuleOut):
+    level: str | None
+    description: str | None
+    links: list[Link | None]
+
+
 class ModulePath(BaseModel):
     path: list[ModuleOut]
 

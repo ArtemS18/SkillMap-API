@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import uuid
-from fastapi.security import OAuth2PasswordRequestForm
+from pydantic_schemas import oauth2_schema
 from redis_client.client import get_client
 from db import models
 from tortoise.exceptions import IntegrityError
@@ -8,6 +8,8 @@ from tortoise.transactions import in_transaction
 from pydantic_schemas import user_schema, auth_schema
 from config import settings
 from service import exception as service_exp, jwt_utils, pwd
+
+DEFAULT_SCOPES = ["me", "roadmap.read", "roadmap.write"]
 
 
 async def register(create: user_schema.CreateUser) -> user_schema.OutUser:
@@ -38,34 +40,35 @@ async def create_refresh_token_and_save(user_id: int, scopes: list[str]) -> str:
     jti = str(uuid.uuid4())
 
     refresh_token = jwt_utils.create_token(
-        {"sub": str(user_id), "scope": scopes, "typ": "refresh", "jti": jti},
+        {"sub": str(user_id), "scope": " ".join(scopes), "typ": "refresh", "jti": jti},
         _expire_in=expire_at,
     )
     await models.RefreshToken.create(id=jti, user_id=user_id, expire_at=expire_at)
     return refresh_token
 
 
-async def login(cred: OAuth2PasswordRequestForm) -> auth_schema.AuthOut:
-    exist_user = await models.User.get_or_none(email=cred.username)
+async def login(username: str, password: str, scopes: list[str]) -> auth_schema.AuthOut:
+    exist_user = await models.User.get_or_none(email=username)
     if exist_user is None:
         raise service_exp.NotFoundError("user")
     if not exist_user.email_verified:
         raise service_exp.BadRequest("email is not verified")
-    if not pwd.verifi_password(cred.password, exist_user.hashed_password):
+    if not pwd.verifi_password(password, exist_user.hashed_password):
         raise service_exp.BadCredentials
 
     access_expire = settings.jwt_access_expires_at
 
     access_token = jwt_utils.create_token(
-        {"sub": str(exist_user.id), "scope": cred.scopes, "typ": "access"},
+        {"sub": str(exist_user.id), "scope": " ".join(scopes), "typ": "access"},
         access_expire,
     )
-    refresh_token = await create_refresh_token_and_save(exist_user.id, cred.scopes)
+    refresh_token = await create_refresh_token_and_save(exist_user.id, scopes)
 
     return auth_schema.AuthOut(
         access_token=access_token,
         refresh_token=refresh_token,
         expire_in=access_expire.seconds,
+        scopes=" ".join(scopes),
     )
 
 
@@ -84,7 +87,9 @@ async def refresh(refresh_token: str) -> auth_schema.AuthOut:
         cur_token.is_banned = True
         await cur_token.save(using_db=conn)
 
-    refresh_token = await create_refresh_token_and_save(int(payload.sub), payload.scope)
+    refresh_token = await create_refresh_token_and_save(
+        int(payload.sub), payload.scope.split(" ")
+    )
 
     access_expire = settings.jwt_access_expires_at
 
@@ -97,4 +102,41 @@ async def refresh(refresh_token: str) -> auth_schema.AuthOut:
         access_token=access_token,
         refresh_token=refresh_token,
         expire_in=access_expire.seconds,
+        scope=payload.scope,
+    )
+
+
+async def create_or_get_user_oauth(cred: oauth2_schema.UserOAuthCredentials):
+    user = await models.User.get_or_create(
+        {
+            "email": cred.email,
+            "name": cred.name,
+            "email_verified": cred.email_verified,
+            "provider": cred.provider,
+            "external_id": cred.sub,
+        },
+        external_id=cred.sub,
+        provider=cred.provider,
+    )
+    return user[0]
+
+
+async def login_by_oauth(
+    cred: oauth2_schema.UserOAuthCredentials,
+) -> auth_schema.AuthOut:
+    user = await create_or_get_user_oauth(cred)
+
+    access_expire = settings.jwt_access_expires_at
+
+    access_token = jwt_utils.create_token(
+        {"sub": str(user.id), "scope": " ".join(DEFAULT_SCOPES), "typ": "access"},
+        access_expire,
+    )
+    refresh_token = await create_refresh_token_and_save(user.id, DEFAULT_SCOPES)
+
+    return auth_schema.AuthOut(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expire_in=access_expire.seconds,
+        scopes=" ".join(DEFAULT_SCOPES),
     )

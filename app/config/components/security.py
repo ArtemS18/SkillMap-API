@@ -10,6 +10,9 @@ class SecurityConfig(BaseSettings):
     jwt_access_secret_key: str = "secret_key"
     jwt_access_algorithm: str = "HS256"
 
+    google_client_secret: str
+    google_client_id: str
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, env_file_encoding="utf-8", extra="ignore"
     )
