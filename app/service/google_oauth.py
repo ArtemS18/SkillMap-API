@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from pydantic_schemas import oauth2_schema
 from service import exception
 from db.models.user import UserAuthProvider
+from config import settings
 
 import aiohttp
 import jwt
@@ -18,7 +19,7 @@ def get_oauth_url() -> str:
         "include_granted_scopes": "true",
         "response_type": "code",
         "redirect_uri": REDIRECT_URI,
-        "client_id": CLIENT_ID,
+        "client_id": settings.google_client_id,
         "scope": "openid profile email",
     }
     query = urlencode(params)
@@ -32,8 +33,8 @@ async def oauth_callback(code: str) -> oauth2_schema.UserOAuthCredentials:
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": REDIRECT_URI,
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
+        "client_id": settings.google_client_id,
+        "client_secret": settings.google_client_secret,
     }
 
     async with aiohttp.ClientSession() as client:
