@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
+from logging import getLogger
 import uuid
+from tortoise.expressions import Q
+from app.db.models.user import UserAuthProvider
 from pydantic_schemas import oauth2_schema
 from redis_client.client import get_client
 from db import models
@@ -10,6 +13,8 @@ from config import settings
 from service import exception as service_exp, jwt_utils, pwd
 
 DEFAULT_SCOPES = ["me", "roadmap.read", "roadmap.write"]
+
+log = getLogger(__name__)
 
 
 async def register(create: user_schema.CreateUser) -> user_schema.OutUser:
@@ -48,7 +53,9 @@ async def create_refresh_token_and_save(user_id: int, scopes: list[str]) -> str:
 
 
 async def login(username: str, password: str, scopes: list[str]) -> auth_schema.AuthOut:
-    exist_user = await models.User.get_or_none(email=username)
+    exist_user = await models.User.filter(
+        Q(email=username) & Q(Q(provider=None) | Q(provider=UserAuthProvider.email))
+    ).first()
     if exist_user is None:
         raise service_exp.NotFoundError("user")
     if not exist_user.email_verified:
@@ -97,12 +104,12 @@ async def refresh(refresh_token: str) -> auth_schema.AuthOut:
         {"sub": payload.sub, "scope": payload.scope, "typ": "access"},
         access_expire,
     )
-
+    log.debug(payload)
     return auth_schema.AuthOut(
         access_token=access_token,
         refresh_token=refresh_token,
         expire_in=access_expire.seconds,
-        scope=payload.scope,
+        scopes=payload.scope or "",
     )
 
 

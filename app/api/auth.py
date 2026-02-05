@@ -19,7 +19,7 @@ async def register(
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> auth_schema.AuthOut:
-    return await auth.login(form_data)
+    return await auth.login(form_data.username, form_data.password, form_data.scopes)
 
 
 @auth_router.post("/refresh")

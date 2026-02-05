@@ -4,10 +4,13 @@ from logging import getLogger
 import time
 from typing import AsyncGenerator, Awaitable
 from fastapi.responses import JSONResponse
+import strawberry
 from tortoise import Tortoise, generate_config
 from tortoise.contrib.fastapi import RegisterTortoise
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from strawberry.fastapi import GraphQLRouter
+
 
 from logger import _init_logger
 from redis_client import client as redis_client
@@ -31,10 +34,19 @@ async def add_process_time_header(
     return response
 
 
+def _init_graphql_router(_app: FastAPI) -> None:
+    from graphql_client.resolver import Query
+
+    schema = strawberry.Schema(Query)
+    graphql_router = GraphQLRouter(schema)
+    _app.include_router(graphql_router, prefix="/graphql")
+
+
 def _init_router(_app: FastAPI) -> None:
     from api import router
 
     _app.include_router(router)
+    _init_graphql_router(_app)
 
 
 def _init_middleware(_app: FastAPI) -> None:

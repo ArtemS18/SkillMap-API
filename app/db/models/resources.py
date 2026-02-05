@@ -9,6 +9,7 @@ if typing.TYPE_CHECKING:
 class Resource(base.BaseMixin, base.BaseModel):
     url = fields.CharField(max_length=256)
     title = fields.CharField(max_length=128)
+    links: fields.BackwardFKRelation["ResourceModule"]
 
     class Meta:
         table = "resources"

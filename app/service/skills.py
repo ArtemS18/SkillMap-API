@@ -93,10 +93,11 @@ async def get_skill_details(id: str) -> ModuleDetails:
     if details is None:
         raise exception.NotFoundError("module details")
 
-    links = await models.Resource.filter(links__module_code=id)
+    links = await models.Resource.filter(links__module_code=id).values("title", "url")
+    log.debug("links=%s", links)
     return ModuleDetails(
         **skill.model_dump(),
         level=details.level,
         description=details.description,
-        links=[Link(url=link.url, title=link.title) for link in links],
+        links=[Link.model_validate(link) for link in links],
     )
