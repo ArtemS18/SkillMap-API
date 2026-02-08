@@ -37,7 +37,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
-RUN poetry install --without dev
+RUN poetry install --no-interaction --without dev 
 
 FROM builder-base AS development
 # we make this to reproduce the same structure as repo for aerich
