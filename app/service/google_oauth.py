@@ -12,7 +12,7 @@ import aiohttp
 import jwt
 
 
-REDIRECT_URI = "http://localhost:5173/login/oauth/google"
+REDIRECT_URI = "http://skillmap.ddns.net:80/login/oauth/google"
 JWT_PUBLIC_KEY_URI = "https://www.googleapis.com/oauth2/v3/certs"
 
 log = getLogger(__name__)
