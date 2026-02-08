@@ -47,6 +47,7 @@ WORKDIR /app/
 FROM builder-base AS production
 # we make this to reproduce the same structure as repo for aerich
 COPY ./app /app/app
+COPY ./promts app/promts
 COPY pyproject.toml /app/pyproject.toml
 WORKDIR /app/
 CMD ["python", "app/main.py"]
