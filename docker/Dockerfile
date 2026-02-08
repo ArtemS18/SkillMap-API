@@ -1,32 +1,32 @@
 FROM python:3.11-slim AS python-base
 
 ENV PYTHONUNBUFFERED=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_NO_CACHE_DIR=off \
-    USE_DOCKER=1 \
-	# poetry:
-	POETRY_VERSION=2.1.2 \
-	POETRY_VIRTUALENVS_CREATE=false \
-	POETRY_CACHE_DIR='/var/cache/pypoetry' \
-	# Locale settings
-	LANG=ru_RU.UTF-8 \
-	LC_ALL=ru_RU.UTF-8 \
-	LC_TIME=ru_RU.UTF-8 \
-	LANGUAGE=ru_RU.UTF-8 \
-    PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv"
+  POETRY_VIRTUALENVS_CREATE=false \
+  PIP_DISABLE_PIP_VERSION_CHECK=on \
+  PIP_NO_CACHE_DIR=off \
+  USE_DOCKER=1 \
+  # poetry:
+  POETRY_VERSION=2.1.2 \
+  POETRY_VIRTUALENVS_CREATE=false \
+  POETRY_CACHE_DIR='/var/cache/pypoetry' \
+  # Locale settings
+  LANG=ru_RU.UTF-8 \
+  LC_ALL=ru_RU.UTF-8 \
+  LC_TIME=ru_RU.UTF-8 \
+  LANGUAGE=ru_RU.UTF-8 \
+  PYSETUP_PATH="/opt/pysetup" \
+  VENV_PATH="/opt/pysetup/.venv"
 
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 FROM python-base AS builder-base
 
 RUN apt-get update && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
-    bash \
-    build-essential \
-    curl \
-    gettext \
-    gcc \
+  bash \
+  build-essential \
+  curl \
+  gettext \
+  gcc \
   && pip install "poetry==$POETRY_VERSION" && poetry --version \
   # Cleaning cache:
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
@@ -37,7 +37,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
-RUN poetry install --no-interaction --without dev 
+RUN poetry install --no-interaction --without dev --no-root
 
 FROM builder-base AS development
 # we make this to reproduce the same structure as repo for aerich
