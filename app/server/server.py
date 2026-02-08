@@ -96,6 +96,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
                 app=_app,
                 config=settings.tortoise_config,
                 add_exception_handlers=True,
+                generate_schemas=True,
             ):
                 await neo4j_client.connect()
                 await gigachat_client.connect()
