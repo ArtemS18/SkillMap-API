@@ -10,7 +10,7 @@ skill_router = APIRouter(prefix="/skill-graph", tags=["Skills"])
 @skill_router.get(
     "/",
     response_model=graph_schema.GraphGet,
-    dependencies=[Depends(request_limit(10)), Depends(get_current_user_id)],
+    # dependencies=[Depends(request_limit(10)), Depends(get_current_user_id)],
 )
 async def handel_graph_skills(topic: str = Query(...)):
     return await skill_service.get_graph_by_topic(topic)

@@ -95,7 +95,6 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
             async with RegisterTortoise(
                 app=_app,
                 config=settings.tortoise_config,
-                generate_schemas=True,
                 add_exception_handlers=True,
             ):
                 await neo4j_client.connect()

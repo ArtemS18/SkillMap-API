@@ -7,9 +7,9 @@ services:
       dockerfile: docker/Dockerfile
       target: production
     ports:
-      - "8000:8000"
+      - "8090:8090"
     environment:
-      ENV: production
+      ENV: development
     env_file:
       - .env
     depends_on:
@@ -63,22 +63,6 @@ services:
       - postgres
       - backend
 
-  llm:
-    image: 3x3cut0r/llama-cpp-python:latest
-    container_name: llm
-    cap_add:
-      - SYS_RESOURCE
-    environment:
-      MODEL_DOWNLOAD: "True"
-      MODEL_REPO: "TheBloke/Mistral-7B-Instruct-v0.2-GGUF"
-      MODEL: "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
-      MODEL_ALIAS: "mistral-instruct"
-      CHAT_FORMAT: "mistral-instruct"
-    volumes:
-    - llm_model:/model
-    ports:
-      - "8091:8000"
-
 
 networks:
   postgres:
@@ -91,4 +75,3 @@ volumes:
     neo4j-data:
     neo4j-plugins:
     redis:
-    llm_model:

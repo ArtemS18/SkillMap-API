@@ -10,7 +10,7 @@ from service import roadmap, exception
 log = getLogger(__name__)
 
 
-@cache_query(time_limit=60 * 3, caching=False)  # 3 MINUTE
+@cache_query(time_limit=60 * 3)  # 3 MINUTE
 async def get_graph_by_topic(topic: str) -> GraphGet:
     cypq = """
         MATCH (:Subject{code: $topic_code})-[:LEARN]->(root:Module) 
