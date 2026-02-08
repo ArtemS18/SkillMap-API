@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Security, Query
-from app.pydantic_schemas import skill_schema
+from pydantic_schemas import skill_schema
 from pydantic_schemas import graph_schema, user_schema
 from depends import get_current_user_id
 from service import progress, skills
