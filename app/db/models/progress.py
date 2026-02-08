@@ -7,7 +7,7 @@ from db.models import base
 
 if typing.TYPE_CHECKING:
     from db.models.user import User
-    from app.db.models.status import Status
+    from db.models.status import Status
 
 
 class UserModuleProgress(base.BaseMixin, base.BaseModel):

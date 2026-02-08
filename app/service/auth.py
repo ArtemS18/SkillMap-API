@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from logging import getLogger
 import uuid
 from tortoise.expressions import Q
-from app.db.models.user import UserAuthProvider
+from db.models.user import UserAuthProvider
 from pydantic_schemas import oauth2_schema
 from redis_client.client import get_client
 from db import models

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.db.models import refresh
+from db.models import refresh
 
 
 class UserCredentials(BaseModel):
