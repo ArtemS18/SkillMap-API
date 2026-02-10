@@ -13,6 +13,8 @@ class SecurityConfig(BaseSettings):
     google_client_secret: str
     google_client_id: str
 
+    redirect_url: str = "http://skillmap.ddns.net/login/oauth/google"
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, env_file_encoding="utf-8", extra="ignore"
     )

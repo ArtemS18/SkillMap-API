@@ -12,7 +12,6 @@ import aiohttp
 import jwt
 
 
-REDIRECT_URI = "http://skillmap.ddns.net:80/login/oauth/google"
 JWT_PUBLIC_KEY_URI = "https://www.googleapis.com/oauth2/v3/certs"
 
 log = getLogger(__name__)
@@ -24,7 +23,7 @@ def get_oauth_url() -> str:
         "access_type": "offline",
         "include_granted_scopes": "true",
         "response_type": "code",
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": settings.redirect_url,
         "client_id": settings.google_client_id,
         "scope": "openid profile email",
     }
@@ -72,7 +71,7 @@ async def oauth_callback(code: str) -> oauth2_schema.UserOAuthCredentials:
     payload = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": settings.redirect_url,
         "client_id": settings.google_client_id,
         "client_secret": settings.google_client_secret,
     }
