@@ -48,6 +48,6 @@ FROM builder-base AS production
 # we make this to reproduce the same structure as repo for aerich
 WORKDIR /app/
 COPY ./app /app/app
-COPY ./promts app/promts
+COPY ./promts /app/promts
 COPY pyproject.toml /app/pyproject.toml
 CMD ["python", "app/main.py"]
